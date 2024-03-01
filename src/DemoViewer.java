@@ -92,6 +92,18 @@ public class DemoViewer {
 
                     double triangleArea = (v1.x - v3.x) * (v2.y - v1.y) - (v1.x - v2.x) * (v3.y - v1.y);
 
+                    Vertex norm = new Vertex(
+                            (t.v2.y - t.v1.y) * (t.v3.z - t.v1.z) - (t.v2.z - t.v1.z) * (t.v3.y - t.v1.y),
+                            (t.v2.z - t.v1.z) * (t.v3.x - t.v1.x) - (t.v2.x - t.v1.x) * (t.v3.z - t.v1.z),
+                            (t.v2.x - t.v1.x) * (t.v3.y - t.v1.y) - (t.v2.y - t.v1.y) * (t.v3.x - t.v1.x)
+                    );
+
+                    double normalLength = Math.sqrt(norm.x * norm.x + norm.y * norm.y + norm.z * norm.z);
+
+                    norm.x /= normalLength;
+                    norm.y /= normalLength;
+                    norm.z /= normalLength;
+
                     for (int y = minY; y < maxY; y++) {
                         for (int x = minX; x < maxX; x++) {
                             double b1 = ((x - v3.x) * (v2.y - v3.y) - (v2.x - v3.x) * (y - v3.y)) / triangleArea;
