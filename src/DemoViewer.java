@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class DemoViewer {
@@ -44,7 +45,7 @@ public class DemoViewer {
                         new Vertex(-100, -100, 100),
                         Color.BLUE));
 
-                g2.translate(getWidth() / 2, getHeight() / 2);
+                //g2.translate(getWidth() / 2, getHeight() / 2);
                 g2.setColor(Color.WHITE);
 
                 double headerAngle = Math.toRadians(headingSlider.getValue());
@@ -71,12 +72,43 @@ public class DemoViewer {
                     Vertex v2 = transform.transform(t.v2);
                     Vertex v3 = transform.transform(t.v3);
 
+                    v1.x = v1.x + getWidth() / 2;
+                    v1.y = v1.y + getHeight() / 2;
+                    v2.x = v2.x + getWidth() / 2;
+                    v2.y = v2.y + getHeight() / 2;
+                    v3.x = v3.x + getWidth() / 2;
+                    v3.y = v3.y + getHeight() / 2;
+
+                    int minX = (int) Math.min(v1.x, Math.min(v2.x, v3.x));
+                    int maxX = (int) Math.max(v1.x, Math.max(v2.x, v3.x));
+                    int minY = (int) Math.min(v1.y, Math.min(v2.y, v3.y));
+                    int maxY = (int) Math.max(v1.y, Math.max(v2.y, v3.y));
+
+                    double triangleArea = (v1.x - v3.x) * (v2.y - v1.y) - (v1.x - v2.x) * (v3.y - v1.y);
+
+                    BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+                    for (int y = minY; y < maxY; y++) {
+                        for (int x = minX; x < maxX; x++) {
+                            double b1 = ((x - v3.x) * (v2.y - v3.y) - (v2.x - v3.x) * (y - v3.y)) / triangleArea;
+                            double b2 = ((x - v1.x) * (v3.y - v1.y) - (v3.x - v1.x) * (y - v1.y)) / triangleArea;
+                            double b3 = ((x - v2.x) * (v1.y - v2.y) - (v1.x - v2.x) * (y - v2.y)) / triangleArea;
+                            if (b1 >= 0 && b2 >= 0 && b3 >= 0) {
+                                img.setRGB(x, y, t.color.getRGB());
+                            }
+                        }
+                    }
+
+                    g2.drawImage(img, 0, 0, null);
+
+                    /*
                     Path2D path = new Path2D.Double();
                     path.moveTo(v1.x, v1.y);
                     path.lineTo(v2.x, v2.y);
                     path.lineTo(v3.x, v3.y);
                     path.closePath();
                     g2.draw(path);
+                    */
                 }
             }
         };
