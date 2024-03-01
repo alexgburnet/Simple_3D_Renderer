@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DemoViewer {
     public static void main(String[] args) {
@@ -66,6 +67,11 @@ public class DemoViewer {
 
                 Matrix3 transform = headingTransform.multiply(pitchTransform);
 
+                BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+                double[] zBuffer = new double[img.getWidth() * img.getHeight()];
+                Arrays.fill(zBuffer, Double.NEGATIVE_INFINITY);
+
                 for (Triangle t : tris) {
 
                     Vertex v1 = transform.transform(t.v1);
@@ -86,15 +92,21 @@ public class DemoViewer {
 
                     double triangleArea = (v1.x - v3.x) * (v2.y - v1.y) - (v1.x - v2.x) * (v3.y - v1.y);
 
-                    BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-
                     for (int y = minY; y < maxY; y++) {
                         for (int x = minX; x < maxX; x++) {
                             double b1 = ((x - v3.x) * (v2.y - v3.y) - (v2.x - v3.x) * (y - v3.y)) / triangleArea;
                             double b2 = ((x - v1.x) * (v3.y - v1.y) - (v3.x - v1.x) * (y - v1.y)) / triangleArea;
                             double b3 = ((x - v2.x) * (v1.y - v2.y) - (v1.x - v2.x) * (y - v2.y)) / triangleArea;
-                            if (b1 >= 0 && b2 >= 0 && b3 >= 0) {
-                                img.setRGB(x, y, t.color.getRGB());
+
+                            double depth = b1 * v1.z + b2 * v2.z + b3 * v3.z;
+                            int zIndex = y * img.getWidth() + x;
+
+                            if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1) {
+                                if (zBuffer[zIndex] < depth) {
+                                    img.setRGB(x, y, t.color.getRGB());
+                                    zBuffer[zIndex] = depth;
+                                }
+
                             }
                         }
                     }
@@ -109,6 +121,7 @@ public class DemoViewer {
                     path.closePath();
                     g2.draw(path);
                     */
+
                 }
             }
         };
