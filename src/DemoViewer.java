@@ -92,17 +92,22 @@ public class DemoViewer {
 
                     double triangleArea = (v1.x - v3.x) * (v2.y - v1.y) - (v1.x - v2.x) * (v3.y - v1.y);
 
+                    Vertex ab = new Vertex(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
+                    Vertex ac = new Vertex(v3.x - v1.x, v3.y - v1.y, v3.z - v1.z);
                     Vertex norm = new Vertex(
-                            (t.v2.y - t.v1.y) * (t.v3.z - t.v1.z) - (t.v2.z - t.v1.z) * (t.v3.y - t.v1.y),
-                            (t.v2.z - t.v1.z) * (t.v3.x - t.v1.x) - (t.v2.x - t.v1.x) * (t.v3.z - t.v1.z),
-                            (t.v2.x - t.v1.x) * (t.v3.y - t.v1.y) - (t.v2.y - t.v1.y) * (t.v3.x - t.v1.x)
+                            ab.y * ac.z - ab.z * ac.y,
+                            ab.z * ac.x - ab.x * ac.z,
+                            ab.x * ac.y - ab.y * ac.x
                     );
+
 
                     double normalLength = Math.sqrt(norm.x * norm.x + norm.y * norm.y + norm.z * norm.z);
 
                     norm.x /= normalLength;
                     norm.y /= normalLength;
                     norm.z /= normalLength;
+
+                    double angleCos = Math.abs(norm.z);
 
                     for (int y = minY; y < maxY; y++) {
                         for (int x = minX; x < maxX; x++) {
@@ -115,7 +120,8 @@ public class DemoViewer {
 
                             if (b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1 && b3 >= 0 && b3 <= 1) {
                                 if (zBuffer[zIndex] < depth) {
-                                    img.setRGB(x, y, t.color.getRGB());
+                                    //img.setRGB(x, y, t.color.getRGB());
+                                    img.setRGB(x, y, getShade(t.color, angleCos).getRGB());
                                     zBuffer[zIndex] = depth;
                                 }
 
@@ -144,6 +150,18 @@ public class DemoViewer {
         pane.add(renderPanel);
         frame.setSize(400, 400);
         frame.setVisible(true);
+    }
+
+    public static Color getShade(Color color, double shade) {
+        double redLinear = Math.pow(color.getRed(), 2.4) * shade;
+        double greenLinear = Math.pow(color.getGreen(), 2.4) * shade;
+        double blueLinear = Math.pow(color.getBlue(), 2.4) * shade;
+
+        int red = (int) Math.pow(redLinear, 1/2.4);
+        int green = (int) Math.pow(greenLinear, 1/2.4);
+        int blue = (int) Math.pow(blueLinear, 1/2.4);
+
+        return new Color(red, green, blue);
     }
 }
 
