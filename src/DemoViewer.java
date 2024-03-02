@@ -19,6 +19,10 @@ public class DemoViewer {
         JSlider pitchSlider = new JSlider(SwingConstants.VERTICAL, -90, 90, 0);
         pane.add(pitchSlider, BorderLayout.EAST);
 
+        // slider to control the roll
+        JSlider rollSlider = new JSlider(SwingConstants.VERTICAL, -90, 90, 0);
+        pane.add(rollSlider, BorderLayout.WEST);
+
 
         // panel to display render results
         JPanel renderPanel = new JPanel() {
@@ -65,7 +69,15 @@ public class DemoViewer {
                         0, -Math.sin(pitchAngle), Math.cos(pitchAngle)
                 });
 
-                Matrix3 transform = headingTransform.multiply(pitchTransform);
+                double rollAngle = Math.toRadians(rollSlider.getValue());
+
+                Matrix3 rollTransfrom = new Matrix3(new double[] {
+                        Math.cos(rollAngle), Math.sin(rollAngle), 0,
+                        -Math.sin(rollAngle), Math.cos(rollAngle), 0,
+                        0, 0, 1
+                });
+
+                Matrix3 transform = headingTransform.multiply(pitchTransform).multiply(rollTransfrom);
 
                 BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
@@ -146,9 +158,10 @@ public class DemoViewer {
 
         headingSlider.addChangeListener(e -> renderPanel.repaint());
         pitchSlider.addChangeListener(e -> renderPanel.repaint());
+        rollSlider.addChangeListener(e -> renderPanel.repaint());
 
         pane.add(renderPanel);
-        frame.setSize(400, 400);
+        frame.setSize(600, 600);
         frame.setVisible(true);
     }
 
